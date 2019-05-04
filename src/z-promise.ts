@@ -1,4 +1,4 @@
-import { PromiseState, IHandleFunc } from "type";
+import { PromiseState, IHandleFunc } from "./type";
 import { isFunction } from "@utils/is-type";
 
 export class ZPromise {
