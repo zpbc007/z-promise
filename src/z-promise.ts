@@ -1,18 +1,25 @@
-import { PromiseState, IHandleFunc } from "./type";
+import { PromiseState } from "./type";
 import { isFunction } from "@utils/is-type";
 
-export class ZPromise {
+type IResolve<T> = (value?: T | ZPromise<T>) => void;
+type IReject = (reason?: any) => void;
+type IHandleFunc<T> = (resolve: IResolve<T>, reject: IReject) => void;
+
+type IOnFulfilled<T, TResult> = (value: T) => TResult | ZPromise<TResult> | undefined | null
+type IOnRejected<TResult> = (reason: any) => TResult | ZPromise<TResult> | undefined | null
+
+export class ZPromise<T = any> {
     /** 初始状态为pending */
     private state = PromiseState.PENDING
     /** 存放的值或者错误信息 */
-    private val = null
+    private val: T = null
     /** then 方法注册的函数 */
     private readonly fulfilledQueue = []
     /** catch 方法注册的函数 */
     private readonly rejectedQueue = []
 
     /** 构造函数传入handle */
-    constructor(handleFunc: IHandleFunc) {
+    constructor(handleFunc: IHandleFunc<T>) {
         if (!isFunction(handleFunc)) {
             throw new Error("ZPromise need function as handler");
         }
@@ -82,7 +89,8 @@ export class ZPromise {
         this.val = value
         // 清空队列
         while (this.fulfilledQueue.length > 0) {
-            this.fulfilledQueue.shift()(value)
+            const onFulfilled = this.fulfilledQueue.shift()
+            onFulfilled && onFulfilled(value)
         }
     }
 
@@ -90,11 +98,12 @@ export class ZPromise {
         this.state = PromiseState.REJECTED
         this.val = error
         while (this.rejectedQueue.length > 0) {
-            this.rejectedQueue.shift()(error)
+            const onRejected = this.rejectedQueue.shift()
+            onRejected && onRejected(error)
         }
     }
 
-    private readonly resolve = (value) => {
+    private readonly resolve: IResolve<T> = (value) => {
         /** resolve 只能从 pending 转换为 fulfilled */
         if (!this.isPending()) {
             return
@@ -112,7 +121,7 @@ export class ZPromise {
         setTimeout(run, 0);
     }
 
-    private readonly reject = (error) => {
+    private readonly reject: IReject = (error) => {
         /** reject 只能从 pending 转换为 rejected */
         if (!this.isPending()) {
             return 
@@ -124,13 +133,13 @@ export class ZPromise {
         }, 0);
     }
 
-    then(onFulfilled?, onRejected?) {
-        return new ZPromise((resolve, reject) => {
-            const fulfilled = (value) => {
+    then<TResult = T>(onFulfilled?: IOnFulfilled<T, TResult>, onRejected?: IOnRejected<TResult>) {
+        return new ZPromise<TResult>((resolve, reject) => {
+            const fulfilled = (value: T) => {
                 try {
                     // 未传入 onFulfilled 直接进入fulfilled状态
                     if (!isFunction(onFulfilled)) {
-                        resolve(value)
+                        resolve(value as any)
                     } else {
                         // 得到上个promise的返回值
                         const res = onFulfilled(value)
@@ -149,7 +158,7 @@ export class ZPromise {
                 }
             }
 
-            const rejected = (error) => {
+            const rejected = (error: any) => {
                 try {
                     // 上一个 promise 未传入 onRejected 进入当前的 rejected 状态
                     if (!isFunction(onRejected)) {
@@ -175,8 +184,8 @@ export class ZPromise {
             switch (this.state) {
                 // pending 状态加入队列
                 case PromiseState.PENDING:
-                    this.fulfilledQueue.push(onFulfilled)
-                    this.rejectedQueue.push(onRejected)
+                    this.fulfilledQueue.push(fulfilled)
+                    this.rejectedQueue.push(rejected)
                     break
                 case PromiseState.FULFILLED:
                     fulfilled(this.val)
