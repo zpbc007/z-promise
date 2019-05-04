@@ -1,0 +1,14 @@
+{
+  "name": "z-promise",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/zpbc007/z-promise.git",
+  "author": "zhaopeng <719197352@qq.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-eslint-rules": "^5.4.0",
+    "tslint-plugin-prettier": "^2.0.1",
+    "typescript": "^3.4.5"
+  }
+}
