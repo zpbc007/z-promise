@@ -2,9 +2,7 @@
   "extends": [
     "tslint:recommended",
     "tslint-eslint-rules",
-    "tslint-config-prettier",
-    "tslint-react",
-    "tslint-react-hooks"
+    "tslint-config-prettier"
   ],
   "rulesDirectory": ["tslint-plugin-prettier"],
   "defaultSeverity": "warning",
@@ -21,7 +19,7 @@
     "prettier": true,
     "quotemark": [true, "single", "jsx-double"],
     "arrow-parens": [true],
-    "semicolon": [true, "always"],
+    // "semicolon": [true, "always"],
     "no-console": false,
     "no-debugger": false,
     "jsx-no-lambda": false,

@@ -1,1 +1,1 @@
-export { ZPromise } from './z-promise';
+export { ZPromise } from './z-promise'
